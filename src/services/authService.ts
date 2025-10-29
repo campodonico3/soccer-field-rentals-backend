@@ -1,4 +1,4 @@
-import 'dotenv/config'; 
+import 'dotenv/config';
 import bcript from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '../generated/client.js';
@@ -17,7 +17,8 @@ class AuthService {
                 password: hashedPassword,
             }
         })
-        return user;
+        const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET!, { expiresIn: '1h' });
+        return { user, token };
     }
 
     static findUserById = async (id: number) => {
@@ -41,7 +42,7 @@ class AuthService {
         if (!user) throw new Error('User not found');
         const isMatch = await bcript.compare(password, user.password);
         if (!isMatch) throw new Error('Invalid credentials');
-        const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET!, { expiresIn: '1h' });        
+        const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET!, { expiresIn: '1h' });
         return token;
     }
 }
