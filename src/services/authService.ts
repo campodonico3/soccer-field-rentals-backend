@@ -15,9 +15,14 @@ class AuthService {
                 username,
                 email,
                 password: hashedPassword,
+            },
+            select: {
+                id:true,
+                username: true,
+                email: true,
             }
         })
-        const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET!, { expiresIn: '1h' });
+        const token = jwt.sign({ id: user.id }, JWT_SECRET!, { expiresIn: '1h' });
         return { user, token };
     }
 
@@ -37,12 +42,16 @@ class AuthService {
         });
     }
 
+    static getUsers = async () => {
+        return await prisma.user.findMany();
+    }
+
     static loginUser = async (email: string, password: string) => {
         const user = await this.findUserByEmail(email);
         if (!user) throw new Error('User not found');
         const isMatch = await bcript.compare(password, user.password);
         if (!isMatch) throw new Error('Invalid credentials');
-        const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET!, { expiresIn: '1h' });
+        const token = jwt.sign({ id: user.id }, JWT_SECRET!, { expiresIn: '1h' });
         return token;
     }
 }
